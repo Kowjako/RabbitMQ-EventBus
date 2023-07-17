@@ -36,9 +36,6 @@ namespace RabbitConsumer.EventBus
             channel.ExchangeDeclare("ex.default", "direct");
             channel.QueueDeclare("q.event-bus", true, false, false, null);
 
-            // to remove
-            channel.QueueBind("q.event-bus", "ex.default", "CreateOrderEvent");
-
             return channel;
         }
 
