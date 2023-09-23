@@ -12,21 +12,13 @@ namespace RabbitConsumer.EventBus
     {
         private readonly IRabbitMQConnection _conn;
         private readonly ISubscriptionManager _mngr;
+
         private IModel _consumerChannel;
 
-        public RabbitMQBus()
+        public RabbitMQBus(IRabbitMQConnection conn, ISubscriptionManager mngr)
         {
-            var factory = new ConnectionFactory()
-            {
-                HostName = "localhost",
-                Port = AmqpTcpEndpoint.UseDefaultPort,
-                UserName = "guest",
-                Password = "guest",
-                DispatchConsumersAsync = true
-            };
-
-            _conn = new RabbitMQConnection(factory);
-            _mngr = new SubscriptionManager();
+            _conn = conn;
+            _mngr = mngr;
             _consumerChannel = CreateConsumerChannel();
         }
 
@@ -130,7 +122,7 @@ namespace RabbitConsumer.EventBus
                 var handler = Activator.CreateInstance(singleSub.HandlerType);
 
                 var eventType = _mngr.GetEventTypeByName(eventName);
-                var @event  =JsonSerializer.Deserialize(msg, eventType);
+                var @event = JsonSerializer.Deserialize(msg, eventType);
 
                 var eventHandlerType = typeof(IEventHandler<>).MakeGenericType(singleSub.EventType);
                 await (Task)eventHandlerType.GetMethod(nameof(IEventHandler<IEvent>.HandleAsync))
